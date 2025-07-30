@@ -113,10 +113,10 @@ const INITIAL_ORDERS = [
     date: '२०८२/३/२३ १०:३४',
     table: 'Table 1',
     items: [
-      { name: 'Espresso', price: 35, qty: 2 },
-      { name: 'Vegetable Momo', price: 150, qty: 2 }
+      { name: 'Milk Tea', price: 80, qty: 2 },
+      { name: 'Samosa', price: 50, qty: 2 }
     ],
-    total: 370,
+    total: 260,
     payment: 'Cash',
     status: 'completed',
   },
@@ -125,10 +125,10 @@ const INITIAL_ORDERS = [
     date: '२०८२/३/२३ १०:२७',
     table: 'Table 3',
     items: [
-      { name: 'Latte', price: 45, qty: 2 },
-      { name: 'Croissant', price: 45, qty: 2 }
+      { name: 'Masala Chai', price: 90, qty: 2 },
+      { name: 'Momo', price: 120, qty: 1 }
     ],
-    total: 180,
+    total: 300,
     payment: 'Cash',
     status: 'completed',
   },
