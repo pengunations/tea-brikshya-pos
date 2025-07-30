@@ -1218,6 +1218,31 @@ function App() {
     }
   };
 
+  const handleClearAllOrders = async () => {
+    if (!window.confirm('Are you sure you want to clear ALL orders? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/orders/clear`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+
+      if (response.ok) {
+        alert('All orders cleared successfully!');
+        // Reload orders to show empty state
+        setOrders([]);
+      } else {
+        const error = await response.json();
+        alert('Error clearing orders: ' + error.error);
+      }
+    } catch (error) {
+      console.error('Error clearing orders:', error);
+      alert('Error clearing orders. Please try again.');
+    }
+  };
+
   const openCheckout = () => {
     setShowCheckout(true);
   };
@@ -2656,6 +2681,9 @@ function App() {
             )}
             {currentUser?.role === 'admin' && (
               <button className="reset-btn" onClick={handleResetSales}>Reset Sales</button>
+            )}
+            {currentUser?.role === 'admin' && (
+              <button className="clear-btn" onClick={handleClearAllOrders} style={{backgroundColor: '#dc2626', color: 'white'}}>Clear All Orders</button>
             )}
           </div>
         </div>
