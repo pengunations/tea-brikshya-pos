@@ -107,32 +107,7 @@ const INITIAL_PRODUCTS = [
   },
 ];
 
-const INITIAL_ORDERS = [
-  {
-    id: 995533,
-    date: '२०८२/३/२३ १०:३४',
-    table: 'Table 1',
-    items: [
-      { name: 'Milk Tea', price: 80, qty: 2 },
-      { name: 'Samosa', price: 50, qty: 2 }
-    ],
-    total: 260,
-    payment: 'Cash',
-    status: 'completed',
-  },
-  {
-    id: 256368,
-    date: '२०८२/३/२३ १०:२७',
-    table: 'Table 3',
-    items: [
-      { name: 'Masala Chai', price: 90, qty: 2 },
-      { name: 'Momo', price: 120, qty: 1 }
-    ],
-    total: 300,
-    payment: 'Cash',
-    status: 'completed',
-  },
-];
+const INITIAL_ORDERS = [];
 
 const getCategoryIcon = (category) => {
   switch(category) {
