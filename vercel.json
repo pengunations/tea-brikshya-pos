@@ -5,8 +5,15 @@
   "rootDirectory": "frontend",
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "https://your-railway-backend-url.railway.app/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ]
+  ],
+  "env": {
+    "VITE_API_URL": "https://your-railway-backend-url.railway.app"
+  }
 } 
