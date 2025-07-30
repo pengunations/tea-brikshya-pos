@@ -1582,6 +1582,7 @@ app.get('/', (req, res) => {
   res.send('POS Backend is running');
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${PORT}`);
+  console.log(`Network accessible on http://10.0.0.161:${PORT}`);
 });
