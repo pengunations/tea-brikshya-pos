@@ -1588,6 +1588,16 @@ app.delete('/orders/clear', authenticateUser, requireRole(['admin']), (req, res)
   });
 });
 
+// Clear all products (for admin use)
+app.delete('/products/clear', authenticateUser, requireRole(['admin']), (req, res) => {
+  db.run('DELETE FROM products', (err) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json({ message: 'All products cleared successfully' });
+  });
+});
+
 app.get('/', (req, res) => {
   res.send('POS Backend is running');
 });

@@ -34,78 +34,7 @@ const useMobileDetection = () => {
 // API URL - can be configured for online deployment
 const API_URL = import.meta.env.VITE_API_URL || 'http://10.0.0.161:4000';
 
-const INITIAL_PRODUCTS = [
-  { 
-    id: 1, 
-    name: 'Milk Tea', 
-    price: 80, 
-    category: 'Chiya',
-    image: 'https://images.unsplash.com/photo-1558857563-b371033873b8?w=300&h=200&fit=crop'
-  },
-  { 
-    id: 2, 
-    name: 'Black Tea', 
-    price: 60, 
-    category: 'Chiya',
-    image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=300&h=200&fit=crop'
-  },
-  { 
-    id: 3, 
-    name: 'Masala Chai', 
-    price: 90, 
-    category: 'Chiya',
-    image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=300&h=200&fit=crop'
-  },
-  { 
-    id: 4, 
-    name: 'Lemon Tea', 
-    price: 70, 
-    category: 'Chiya',
-    image: 'https://images.unsplash.com/photo-1558857563-b371033873b8?w=300&h=200&fit=crop'
-  },
-  { 
-    id: 5, 
-    name: 'Samosa', 
-    price: 50, 
-    category: 'chiso',
-    image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=300&h=200&fit=crop'
-  },
-  { 
-    id: 6, 
-    name: 'Momo', 
-    price: 120, 
-    category: 'chiso',
-    image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=300&h=200&fit=crop'
-  },
-  { 
-    id: 7, 
-    name: 'Water', 
-    price: 30, 
-    category: 'Chiso',
-    image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=300&h=200&fit=crop'
-  },
-  { 
-    id: 8, 
-    name: 'Juice', 
-    price: 100, 
-    category: 'Chiso',
-    image: 'https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=300&h=200&fit=crop'
-  },
-  { 
-    id: 9, 
-    name: 'Dal Bhat', 
-    price: 150, 
-    category: 'Food',
-    image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=300&h=200&fit=crop'
-  },
-  { 
-    id: 10, 
-    name: 'Chowmein', 
-    price: 120, 
-    category: 'Food',
-    image: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=300&h=200&fit=crop'
-  },
-];
+const INITIAL_PRODUCTS = [];
 
 const INITIAL_ORDERS = [];
 
@@ -1243,6 +1172,31 @@ function App() {
     }
   };
 
+  const handleClearAllProducts = async () => {
+    if (!window.confirm('Are you sure you want to clear ALL products? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/products/clear`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+
+      if (response.ok) {
+        alert('All products cleared successfully!');
+        // Reload products to show empty state
+        setProducts([]);
+      } else {
+        const error = await response.json();
+        alert('Error clearing products: ' + error.error);
+      }
+    } catch (error) {
+      console.error('Error clearing products:', error);
+      alert('Error clearing products. Please try again.');
+    }
+  };
+
   const openCheckout = () => {
     setShowCheckout(true);
   };
@@ -2198,12 +2152,23 @@ function App() {
       <div className="manage-menu">
         <div className="manage-header">
           <h2>Menu Management</h2>
-          <button 
-            className="add-product-btn"
-            onClick={() => setShowAddForm(true)}
-          >
-            + Add Product
-          </button>
+          <div style={{display:'flex',gap:'1rem'}}>
+            <button 
+              className="add-product-btn"
+              onClick={() => setShowAddForm(true)}
+            >
+              + Add Product
+            </button>
+            {currentUser?.role === 'admin' && (
+              <button 
+                className="clear-btn" 
+                onClick={handleClearAllProducts} 
+                style={{backgroundColor: '#dc2626', color: 'white'}}
+              >
+                Clear All Products
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Category Tabs */}
