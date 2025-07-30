@@ -2204,7 +2204,6 @@ function App() {
               style={{
                 padding: '8px 16px',
                 margin: '0 4px',
-                border: 'none',
                 borderRadius: '8px',
                 cursor: 'pointer',
                 fontSize: '14px',
