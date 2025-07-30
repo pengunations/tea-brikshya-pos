@@ -623,8 +623,20 @@ function App() {
       headers: getAuthHeaders()
     })
       .then(res => res.json())
-      .then(setProducts)
-      .catch(e => setProductsError(e.message))
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setProducts(data);
+        } else {
+          // Use initial products if database is empty
+          console.log('Database empty, using initial products');
+          setProducts(INITIAL_PRODUCTS);
+        }
+      })
+      .catch(e => {
+        console.log('Error fetching products, using initial products:', e.message);
+        setProducts(INITIAL_PRODUCTS);
+        setProductsError(e.message);
+      })
       .finally(() => setProductsLoading(false));
   }, [isAuthenticated]);
 
