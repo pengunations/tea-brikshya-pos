@@ -1578,6 +1578,16 @@ app.get('/refunds/stats', authenticateUser, requireRole(['admin']), (req, res) =
   });
 });
 
+// Clear all orders (for admin use)
+app.delete('/orders/clear', authenticateUser, requireRole(['admin']), (req, res) => {
+  db.run('DELETE FROM orders', (err) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json({ message: 'All orders cleared successfully' });
+  });
+});
+
 app.get('/', (req, res) => {
   res.send('POS Backend is running');
 });
