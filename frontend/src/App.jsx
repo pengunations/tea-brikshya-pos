@@ -5238,12 +5238,6 @@ function TableOrderModal({ tableId, tableName, products, currentOrder, onClose, 
       return;
     }
 
-    const token = sessionStorage.getItem('authToken');
-    if (!token) {
-      alert('Authentication error. Please log in again.');
-      return;
-    }
-
     const customerData = {
       name: customerName.trim(),
       phone: newCustomerPhone.trim()
@@ -5252,9 +5246,9 @@ function TableOrderModal({ tableId, tableName, products, currentOrder, onClose, 
     console.log('Creating customer with data:', customerData);
 
     try {
-      const response = await fetch(`http://localhost:4000/customers`, {
+      const response = await fetch(`${API_URL}/customers`, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(customerData)
       });
 
