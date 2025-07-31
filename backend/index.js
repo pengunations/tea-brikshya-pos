@@ -459,7 +459,30 @@ db.serialize(() => {
   )`);
 
   // Add customer_id column if it doesn't exist (for existing databases)
-  db.run(`ALTER TABLE pending_table_orders ADD COLUMN customer_id INTEGER`);
+  db.get("PRAGMA table_info(pending_table_orders)", (err, rows) => {
+    if (err) {
+      console.error('Error checking table schema:', err);
+      return;
+    }
+    
+    db.all("PRAGMA table_info(pending_table_orders)", (err, columns) => {
+      if (err) {
+        console.error('Error getting table info:', err);
+        return;
+      }
+      
+      const hasCustomerId = columns.some(col => col.name === 'customer_id');
+      if (!hasCustomerId) {
+        db.run(`ALTER TABLE pending_table_orders ADD COLUMN customer_id INTEGER`, (err) => {
+          if (err) {
+            console.error('Error adding customer_id column:', err);
+          } else {
+            console.log('Successfully added customer_id column to pending_table_orders');
+          }
+        });
+      }
+    });
+  });
 });
 
 // Authentication middleware
