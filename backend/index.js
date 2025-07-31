@@ -577,7 +577,7 @@ app.get('/products', (req, res) => {
   });
 });
 
-app.post('/products', authenticateUser, requireRole(['admin']), (req, res) => {
+app.post('/products', (req, res) => {
   const { name, price, category, image, description } = req.body;
   if (!name || price == null) return res.status(400).json({ error: 'Name and price are required.' });
   db.run(
@@ -593,7 +593,7 @@ app.post('/products', authenticateUser, requireRole(['admin']), (req, res) => {
   );
 });
 
-app.put('/products/:id', authenticateUser, requireRole(['admin']), (req, res) => {
+app.put('/products/:id', (req, res) => {
   const { name, price, category, image, description } = req.body;
   db.run(
     'UPDATE products SET name=?, price=?, category=?, image=?, description=? WHERE id=?',
@@ -608,7 +608,7 @@ app.put('/products/:id', authenticateUser, requireRole(['admin']), (req, res) =>
   );
 });
 
-app.delete('/products/:id', authenticateUser, requireRole(['admin']), (req, res) => {
+app.delete('/products/:id', (req, res) => {
   db.run('DELETE FROM products WHERE id = ?', [req.params.id], function (err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ success: true });
@@ -656,7 +656,7 @@ app.post('/customers', (req, res) => {
   );
 });
 
-app.put('/customers/:id', authenticateUser, (req, res) => {
+app.put('/customers/:id', (req, res) => {
   const { name, phone } = req.body;
   if (!name || !phone) return res.status(400).json({ error: 'Name and phone are required.' });
   
