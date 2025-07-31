@@ -724,7 +724,7 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/products`, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newProduct),
       });
       if (response.ok) {
@@ -741,7 +741,7 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/products/${updatedProduct.id}`, {
         method: 'PUT',
-        headers: getAuthHeaders(),
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedProduct),
       });
       if (response.ok) {
@@ -758,7 +758,6 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/products/${id}`, {
         method: 'DELETE',
-        headers: getAuthHeaders(),
       });
       if (response.ok) {
         setProducts(products.filter(p => p.id !== id));
