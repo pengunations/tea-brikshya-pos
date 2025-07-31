@@ -35,6 +35,7 @@ const useMobileDetection = () => {
 // Updated: Simplified authentication system - Force rebuild
 const API_URL = 'https://tea-brikshya-pos-production.up.railway.app';
 
+
 const INITIAL_PRODUCTS = [];
 
 const INITIAL_ORDERS = [];
@@ -691,7 +692,7 @@ function App() {
       // Load refund statistics
       let refundStats = { totalRefunds: 0, totalRefundAmount: 0, avgRefundAmount: 0 };
       try {
-        const refundResponse = await fetch(`http://localhost:4000/refunds/stats?period=${selectedDateRange}`, {
+        const refundResponse = await fetch(`${API_URL}/refunds/stats?period=${selectedDateRange}`, {
           headers: getAuthHeaders()
         });
         if (refundResponse.ok) {
@@ -3172,7 +3173,7 @@ function App() {
   const loadRefunds = async () => {
     try {
       setRefundsLoading(true);
-      const response = await fetch('http://localhost:4000/refunds', {
+      const response = await fetch(`${API_URL}/refunds`, {
         headers: getAuthHeaders()
       });
 
@@ -3206,7 +3207,7 @@ function App() {
       console.log('Processing refund:', refundData);
       
       // Send refund data to backend
-      const response = await fetch('http://localhost:4000/refunds', {
+      const response = await fetch(`${API_URL}/refunds`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
