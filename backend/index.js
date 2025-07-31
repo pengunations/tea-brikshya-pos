@@ -126,6 +126,72 @@ db.serialize(() => {
     }
   });
 
+  // Add complete tea shop menu if database is empty
+  db.get('SELECT COUNT(*) as count FROM products', [], (err, row) => {
+    if (err) {
+      console.error('Error checking products count:', err);
+      return;
+    }
+    
+    if (row && row.count === 0) {
+      console.log('Adding complete tea shop menu to empty database...');
+      
+      const teaShopMenu = [
+        // Tea Based
+        { name: 'Milk Chiya', price: 35, category: 'Chiya', description: 'Traditional milk tea' },
+        { name: 'Black Chiya', price: 30, category: 'Chiya', description: 'Strong black tea' },
+        { name: 'Matka Chiya', price: 80, category: 'Chiya', description: 'Special matka tea' },
+        { name: 'Green Chiya', price: 45, category: 'Chiya', description: 'Healthy green tea' },
+        { name: 'Lemon Chiya', price: 30, category: 'Chiya', description: 'Refreshing lemon tea' },
+        { name: 'Hot Lemon', price: 25, category: 'Chiya', description: 'Hot lemon water' },
+        
+        // Snacks
+        { name: 'Chicken Momo', price: 160, category: 'Snacks', description: 'Steamed chicken momo' },
+        { name: 'Veg Momo', price: 130, category: 'Snacks', description: 'Steamed vegetable momo' },
+        { name: 'Buff Momo', price: 150, category: 'Snacks', description: 'Steamed buffalo momo' },
+        { name: 'Chicken Sausage', price: 50, category: 'Snacks', description: 'Chicken sausage' },
+        { name: 'Buff Sausage', price: 50, category: 'Snacks', description: 'Buffalo sausage' },
+        { name: 'Pakauda', price: 80, category: 'Snacks', description: 'Crispy vegetable pakora' },
+        { name: 'Samosa', price: 25, category: 'Snacks', description: 'Spicy potato samosa' },
+        { name: 'Potato Wedges', price: 200, category: 'Snacks', description: 'Crispy potato wedges' },
+        { name: 'French Fries', price: 200, category: 'Snacks', description: 'Golden french fries' },
+        { name: 'Veg Fried Rice', price: 140, category: 'Food', description: 'Mixed vegetable fried rice' },
+        { name: 'Chicken Fried Rice', price: 200, category: 'Food', description: 'Chicken fried rice' },
+        { name: 'Buff Fried Rice', price: 180, category: 'Food', description: 'Buffalo fried rice' },
+        { name: 'Wai wai Sadeko', price: 80, category: 'Snacks', description: 'Spicy wai wai noodles' },
+        { name: 'Chatpate', price: 80, category: 'Snacks', description: 'Spicy chatpate' },
+        { name: 'Puff Set', price: 50, category: 'Snacks', description: 'Puff pastry set' },
+        { name: 'Cokkies Set', price: 110, category: 'Snacks', description: 'Cookie set' },
+        
+        // Cold Drinks (Chiso)
+        { name: 'Cold Drinks', price: 75, category: 'Chiso', description: 'Assorted cold drinks' },
+        { name: 'Lassi', price: 120, category: 'Chiso', description: 'Sweet yogurt lassi' },
+        { name: 'Mohi', price: 40, category: 'Chiso', description: 'Refreshing buttermilk' },
+        { name: 'Banana Milk Shake', price: 140, category: 'Chiso', description: 'Banana milkshake' },
+        { name: 'Oreo Milk Shake', price: 140, category: 'Chiso', description: 'Oreo milkshake' },
+        { name: 'Peach Ice Tea', price: 150, category: 'Chiso', description: 'Peach iced tea' },
+        { name: 'Sprite Lemonade', price: 90, category: 'Chiso', description: 'Sprite with lemon' },
+        { name: 'Masala Coke', price: 90, category: 'Chiso', description: 'Spicy masala coke' },
+        { name: 'Mineral Water', price: 25, category: 'Chiso', description: 'Mineral water' },
+        
+        // Cigarettes
+        { name: 'Shikhar Ice', price: 20, category: 'Cigarettes', description: 'Shikhar Ice cigarettes' },
+        { name: 'Surya', price: 25, category: 'Cigarettes', description: 'Surya cigarettes' },
+        { name: 'Malboro', price: 25, category: 'Cigarettes', description: 'Marlboro cigarettes' },
+        
+        // Hookah
+        { name: 'Hukka', price: 400, category: 'Food', description: 'Hookah service' }
+      ];
+      
+      teaShopMenu.forEach(product => {
+        db.run(`INSERT INTO products (name, price, category, description) VALUES (?, ?, ?, ?)`,
+          [product.name, product.price, product.category, product.description]);
+      });
+      
+      console.log('Complete tea shop menu added successfully!');
+    }
+  });
+
   db.run(`CREATE TABLE IF NOT EXISTS orders (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     date TEXT NOT NULL,
