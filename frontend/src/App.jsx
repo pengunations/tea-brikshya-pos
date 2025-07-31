@@ -2253,40 +2253,8 @@ function App() {
           >
             ⚙️ Configure Tables
           </button>
-          <button 
-            className="config-btn"
-            onClick={() => {
-              console.log('Auto-authenticating user...');
-              sessionStorage.setItem('authToken', 'YWRtaW46YWRtaW4=');
-              setIsAuthenticated(true);
-              setCurrentUser({ username: 'admin', role: 'admin' });
-              alert('User authenticated! Try clicking on tables now.');
-            }}
-            style={{marginLeft: '10px', backgroundColor: '#10b981'}}
-          >
-            🔐 Auto Login
-          </button>
-                      <button 
-              className="config-btn"
-              onClick={async () => {
-                console.log('🧹 Clearing all table orders...');
-                setTableOrders({});
-                setBackyardTableOrders({});
-                try {
-                  await fetch(`${API_URL}/pending-table-orders`, {
-                    method: 'DELETE',
-                    headers: getAuthHeaders(),
-                  });
-                  console.log('✅ All table orders cleared');
-                  alert('All table orders cleared!');
-                } catch (error) {
-                  console.error('❌ Error clearing table orders:', error);
-                }
-              }}
-              style={{marginLeft: '10px', backgroundColor: '#dc2626'}}
-            >
-              🧹 Clear All
-            </button>
+
+                      
 
         </div>
       </div>
@@ -2624,9 +2592,7 @@ function App() {
             {currentUser?.role === 'admin' && (
               <button className="reset-btn" onClick={handleResetSales}>Reset Sales</button>
             )}
-            {currentUser?.role === 'admin' && (
-              <button className="clear-btn" onClick={handleClearAllOrders} style={{backgroundColor: '#dc2626', color: 'white'}}>Clear All Orders</button>
-            )}
+
           </div>
         </div>
         <div className="sales-meta">
