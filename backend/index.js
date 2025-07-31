@@ -207,6 +207,7 @@ db.serialize(() => {
     final_total REAL NOT NULL,
     line_item_discounts TEXT, -- JSON string for line item discounts
     customer_id INTEGER,
+    customer_name TEXT,
     order_notes TEXT, -- Special requests and notes
     is_split_bill BOOLEAN DEFAULT 0, -- Flag for split bills
     parent_order_id INTEGER, -- For split bills, references the original order
@@ -235,38 +236,90 @@ db.serialize(() => {
       const hasParentOrderId = rows.some(row => row.name === 'parent_order_id');
       const hasSplitNumber = rows.some(row => row.name === 'split_number');
       
-      if (!hasDiscountAmount) {
-        db.run("ALTER TABLE orders ADD COLUMN discount_amount REAL DEFAULT 0");
-      }
-      if (!hasDiscountType) {
-        db.run("ALTER TABLE orders ADD COLUMN discount_type TEXT DEFAULT 'none'");
-      }
-      if (!hasPromoCode) {
-        db.run("ALTER TABLE orders ADD COLUMN promo_code TEXT");
-      }
-      if (!hasFinalTotal) {
-        db.run("ALTER TABLE orders ADD COLUMN final_total REAL NOT NULL DEFAULT 0");
-      }
-      if (!hasLineItemDiscounts) {
-        db.run("ALTER TABLE orders ADD COLUMN line_item_discounts TEXT");
-      }
-      if (!hasCustomerId) {
-        db.run("ALTER TABLE orders ADD COLUMN customer_id INTEGER");
-      }
-      if (!hasCustomerName) {
-        db.run("ALTER TABLE orders ADD COLUMN customer_name TEXT");
-      }
-      if (!hasOrderNotes) {
-        db.run("ALTER TABLE orders ADD COLUMN order_notes TEXT");
-      }
-      if (!hasIsSplitBill) {
-        db.run("ALTER TABLE orders ADD COLUMN is_split_bill BOOLEAN DEFAULT 0");
-      }
-      if (!hasParentOrderId) {
-        db.run("ALTER TABLE orders ADD COLUMN parent_order_id INTEGER");
-      }
-      if (!hasSplitNumber) {
-        db.run("ALTER TABLE orders ADD COLUMN split_number INTEGER");
+      // Check if we need to recreate the table due to missing critical columns
+      const missingCriticalColumns = !hasCustomerName || !hasCustomerId || !hasFinalTotal;
+      
+      if (missingCriticalColumns) {
+        console.log('Critical columns missing, recreating orders table...');
+        // Drop and recreate the orders table with correct schema
+        db.run("DROP TABLE IF EXISTS orders", (err) => {
+          if (err) {
+            console.error('Error dropping orders table:', err);
+            return;
+          }
+          
+          db.run(`CREATE TABLE orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT NOT NULL,
+            table_number TEXT NOT NULL,
+            items TEXT NOT NULL, -- JSON string
+            total REAL NOT NULL,
+            payment TEXT,
+            status TEXT,
+            service_type TEXT DEFAULT 'take-out',
+            discount_amount REAL DEFAULT 0,
+            discount_type TEXT DEFAULT 'none', -- 'percentage', 'flat', 'promo'
+            promo_code TEXT,
+            final_total REAL NOT NULL,
+            line_item_discounts TEXT, -- JSON string for line item discounts
+            customer_id INTEGER,
+            customer_name TEXT,
+            order_notes TEXT, -- Special requests and notes
+            is_split_bill BOOLEAN DEFAULT 0, -- Flag for split bills
+            parent_order_id INTEGER, -- For split bills, references the original order
+            split_number INTEGER, -- Split number (1, 2, 3, etc.)
+            FOREIGN KEY (customer_id) REFERENCES customers (id),
+            FOREIGN KEY (parent_order_id) REFERENCES orders (id)
+          )`, (err) => {
+            if (err) {
+              console.error('Error recreating orders table:', err);
+            } else {
+              console.log('Successfully recreated orders table with correct schema');
+            }
+          });
+        });
+      } else {
+        // Add individual columns if they don't exist
+        if (!hasDiscountAmount) {
+          db.run("ALTER TABLE orders ADD COLUMN discount_amount REAL DEFAULT 0");
+        }
+        if (!hasDiscountType) {
+          db.run("ALTER TABLE orders ADD COLUMN discount_type TEXT DEFAULT 'none'");
+        }
+        if (!hasPromoCode) {
+          db.run("ALTER TABLE orders ADD COLUMN promo_code TEXT");
+        }
+        if (!hasFinalTotal) {
+          db.run("ALTER TABLE orders ADD COLUMN final_total REAL NOT NULL DEFAULT 0");
+        }
+        if (!hasLineItemDiscounts) {
+          db.run("ALTER TABLE orders ADD COLUMN line_item_discounts TEXT");
+        }
+        if (!hasCustomerId) {
+          db.run("ALTER TABLE orders ADD COLUMN customer_id INTEGER");
+        }
+        if (!hasCustomerName) {
+          db.run("ALTER TABLE orders ADD COLUMN customer_name TEXT", (err) => {
+            if (err) {
+              console.error('Error adding customer_name column:', err);
+              // If the column already exists or there's an error, we'll handle it gracefully
+            } else {
+              console.log('Successfully added customer_name column to orders table');
+            }
+          });
+        }
+        if (!hasOrderNotes) {
+          db.run("ALTER TABLE orders ADD COLUMN order_notes TEXT");
+        }
+        if (!hasIsSplitBill) {
+          db.run("ALTER TABLE orders ADD COLUMN is_split_bill BOOLEAN DEFAULT 0");
+        }
+        if (!hasParentOrderId) {
+          db.run("ALTER TABLE orders ADD COLUMN parent_order_id INTEGER");
+        }
+        if (!hasSplitNumber) {
+          db.run("ALTER TABLE orders ADD COLUMN split_number INTEGER");
+        }
       }
     }
   });
