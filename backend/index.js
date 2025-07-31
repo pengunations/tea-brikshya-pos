@@ -453,9 +453,13 @@ db.serialize(() => {
     total REAL DEFAULT 0,
     status TEXT DEFAULT 'pending',
     line_item_discounts TEXT,
+    customer_id INTEGER,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
+
+  // Add customer_id column if it doesn't exist (for existing databases)
+  db.run(`ALTER TABLE pending_table_orders ADD COLUMN customer_id INTEGER`);
 });
 
 // Authentication middleware
@@ -784,7 +788,7 @@ app.post('/customers/reset-visits', authenticateUser, (req, res) => {
 
 // --- Pending Table Orders Endpoints ---
 // Get all pending table orders
-app.get('/pending-table-orders', authenticateUser, (req, res) => {
+app.get('/pending-table-orders', (req, res) => {
   db.all('SELECT * FROM pending_table_orders ORDER BY updated_at DESC', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     
@@ -800,8 +804,8 @@ app.get('/pending-table-orders', authenticateUser, (req, res) => {
 });
 
 // Save or update a pending table order
-app.post('/pending-table-orders', authenticateUser, (req, res) => {
-  const { tableId, tableName, items, total, status, lineItemDiscounts } = req.body;
+app.post('/pending-table-orders', (req, res) => {
+  const { tableId, tableName, items, total, status, lineItemDiscounts, customerId } = req.body;
   
   if (!tableId || !tableName) {
     return res.status(400).json({ error: 'Table ID and table name are required' });
@@ -814,8 +818,8 @@ app.post('/pending-table-orders', authenticateUser, (req, res) => {
     if (existingOrder) {
       // Update existing order
       db.run(
-        'UPDATE pending_table_orders SET items = ?, total = ?, status = ?, line_item_discounts = ?, updated_at = CURRENT_TIMESTAMP WHERE table_id = ?',
-        [JSON.stringify(items || []), total || 0, status || 'pending', JSON.stringify(lineItemDiscounts || {}), tableId],
+        'UPDATE pending_table_orders SET items = ?, total = ?, status = ?, line_item_discounts = ?, customer_id = ?, updated_at = CURRENT_TIMESTAMP WHERE table_id = ?',
+        [JSON.stringify(items || []), total || 0, status || 'pending', JSON.stringify(lineItemDiscounts || {}), customerId || null, tableId],
         function(err) {
           if (err) return res.status(500).json({ error: err.message });
           res.json({ message: 'Table order updated successfully', tableId });
@@ -824,8 +828,8 @@ app.post('/pending-table-orders', authenticateUser, (req, res) => {
     } else {
       // Create new order
       db.run(
-        'INSERT INTO pending_table_orders (table_id, table_name, items, total, status, line_item_discounts) VALUES (?, ?, ?, ?, ?, ?)',
-        [tableId, tableName, JSON.stringify(items || []), total || 0, status || 'pending', JSON.stringify(lineItemDiscounts || {})],
+        'INSERT INTO pending_table_orders (table_id, table_name, items, total, status, line_item_discounts, customer_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [tableId, tableName, JSON.stringify(items || []), total || 0, status || 'pending', JSON.stringify(lineItemDiscounts || {}), customerId || null],
         function(err) {
           if (err) return res.status(500).json({ error: err.message });
           res.json({ message: 'Table order created successfully', tableId });
@@ -836,7 +840,7 @@ app.post('/pending-table-orders', authenticateUser, (req, res) => {
 });
 
 // Delete a pending table order (when table is cleared)
-app.delete('/pending-table-orders/:tableId', authenticateUser, (req, res) => {
+app.delete('/pending-table-orders/:tableId', (req, res) => {
   const { tableId } = req.params;
   
   db.run('DELETE FROM pending_table_orders WHERE table_id = ?', [tableId], function(err) {
@@ -846,7 +850,7 @@ app.delete('/pending-table-orders/:tableId', authenticateUser, (req, res) => {
 });
 
 // Delete all pending table orders (when resetting sales)
-app.delete('/pending-table-orders', authenticateUser, (req, res) => {
+app.delete('/pending-table-orders', (req, res) => {
   db.run('DELETE FROM pending_table_orders', function(err) {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ message: 'All pending table orders deleted successfully' });
