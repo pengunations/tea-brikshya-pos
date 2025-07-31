@@ -5356,11 +5356,10 @@ function TableOrderModal({ tableId, tableName, products, currentOrder, onClose, 
                       <div
                         key={customer.id}
                         onClick={() => {
-                          console.log('🎯 Customer selected:', customer);
                           setCustomerName(customer.name);
                           setSelectedCustomerId(customer.id);
                           setShowCustomerDropdown(false);
-                          console.log('🎯 selectedCustomerId set to:', customer.id);
+                          alert(`Customer selected: ${customer.name} (ID: ${customer.id})`);
                         }}
                         style={{
                           padding: '0.5rem',
@@ -5695,11 +5694,7 @@ function TableOrderModal({ tableId, tableName, products, currentOrder, onClose, 
                     orderNotes
                   };
                   
-                  console.log('🎯 Saving order with customer data:', {
-                    selectedCustomerId,
-                    customerName,
-                    discountData
-                  });
+                  alert(`Saving order with customer: ${customerName} (ID: ${selectedCustomerId})`);
                   
                   if (items.length === 0) {
                     alert('Please add items to the order before saving.');
