@@ -10,8 +10,9 @@ const PORT = process.env.PORT || 4000;
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
-// SQLite setup
-const db = new sqlite3.Database(path.join(__dirname, 'pos.db'));
+// SQLite setup - Use Railway's persistent storage
+const dbPath = process.env.DATABASE_URL || path.join(__dirname, 'pos.db');
+const db = new sqlite3.Database(dbPath);
 
 db.serialize(() => {
   // Users table for authentication
@@ -122,6 +123,37 @@ db.serialize(() => {
       db.run(`INSERT INTO reward_tiers (name, min_points, points_per_rs, redemption_rate, discount_percentage) 
               VALUES (?, ?, ?, ?, ?)`, 
         ['Platinum', 15000, 2.0, 0.025, 15]);
+    }
+  });
+
+  // Add sample products if database is empty
+  db.get('SELECT COUNT(*) as count FROM products', [], (err, row) => {
+    if (err) {
+      console.error('Error checking products count:', err);
+      return;
+    }
+    
+    if (row && row.count === 0) {
+      console.log('Adding sample products to empty database...');
+      
+      const sampleProducts = [
+        { name: 'Masala Chiya', price: 40, category: 'Chiya', description: 'Spicy masala tea with ginger and cardamom' },
+        { name: 'Lemon Tea', price: 35, category: 'Chiya', description: 'Refreshing lemon tea' },
+        { name: 'Pakora', price: 50, category: 'Snacks', description: 'Crispy vegetable pakora' },
+        { name: 'Samosa', price: 25, category: 'Snacks', description: 'Spicy potato samosa' },
+        { name: 'Buffalo Momo', price: 80, category: 'Food', description: 'Steamed buffalo momo' },
+        { name: 'Vegetable Fried Rice', price: 70, category: 'Food', description: 'Mixed vegetable fried rice' },
+        { name: 'Coca Cola', price: 40, category: 'Chiso', description: 'Cold Coca Cola' },
+        { name: 'Sprite', price: 35, category: 'Chiso', description: 'Refreshing Sprite' },
+        { name: 'Cigarettes', price: 20, category: 'Cigarettes', description: 'Local cigarettes' }
+      ];
+      
+      sampleProducts.forEach(product => {
+        db.run(`INSERT INTO products (name, price, category, description) VALUES (?, ?, ?, ?)`,
+          [product.name, product.price, product.category, product.description]);
+      });
+      
+      console.log('Sample products added successfully!');
     }
   });
 
