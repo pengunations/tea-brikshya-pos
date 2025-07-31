@@ -254,16 +254,12 @@ function App() {
     const manualDiscount = lineItemDiscounts[item.id];
     let finalPrice = item.price;
 
-    console.log('getItemPrice debug:', { itemId: item.id, originalPrice: item.price, manualDiscount });
-
     // Apply manual discount
     if (manualDiscount) {
       if (manualDiscount.type === 'percentage') {
         finalPrice = finalPrice * (1 - manualDiscount.value / 100);
-        console.log('Applied percentage discount:', { original: item.price, discount: manualDiscount.value, final: finalPrice });
       } else if (manualDiscount.type === 'flat') {
         finalPrice = Math.max(0, finalPrice - manualDiscount.value);
-        console.log('Applied flat discount:', { original: item.price, discount: manualDiscount.value, final: finalPrice });
       }
     }
 
@@ -1495,13 +1491,7 @@ function App() {
 
   const getTableStatus = (tableId) => {
     const tableOrder = tableOrders[tableId];
-    console.log(`getTableStatus for table ${tableId}:`, tableOrder);
-    if (!tableOrder || !tableOrder.items || tableOrder.items.length === 0) {
-      console.log(`Table ${tableId} is FREE`);
-      return 'free';
-    }
-    console.log(`Table ${tableId} is OCCUPIED with ${tableOrder.items.length} items`);
-    return 'occupied';
+    return tableOrder;
   };
 
   const getTableStatusColor = (status) => {
@@ -5117,7 +5107,17 @@ function TableOrderModal({ tableId, tableName, products, currentOrder, onClose, 
       itemsCount: items.length,
       originalItemsCount: originalItems.length 
     });
-  }, [tableId, tableName, currentOrder, items, originalItems]);
+    
+    // Load customer name if customerId exists but customerName is empty
+    if (currentOrder.customerId && !customerName) {
+      const customer = customers.find(c => c.id === currentOrder.customerId);
+      if (customer) {
+        setCustomerName(customer.name);
+        setSelectedCustomerId(customer.id);
+        console.log('🎯 Loaded customer from saved order:', customer);
+      }
+    }
+  }, [tableId, tableName, currentOrder, items, originalItems, customers, customerName]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
