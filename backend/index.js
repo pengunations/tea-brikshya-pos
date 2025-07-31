@@ -570,7 +570,7 @@ app.get('/auth/me', authenticateUser, (req, res) => {
 });
 
 // --- Product Endpoints ---
-app.get('/products', authenticateUser, (req, res) => {
+app.get('/products', (req, res) => {
   db.all('SELECT * FROM products', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
@@ -616,14 +616,14 @@ app.delete('/products/:id', authenticateUser, requireRole(['admin']), (req, res)
 });
 
 // --- Customer Endpoints ---
-app.get('/customers', authenticateUser, (req, res) => {
+app.get('/customers', (req, res) => {
   db.all('SELECT * FROM customers ORDER BY name', [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
 
-app.post('/customers', authenticateUser, (req, res) => {
+app.post('/customers', (req, res) => {
   const { name, phone } = req.body;
   console.log('Creating customer:', { name, phone });
   
@@ -854,7 +854,7 @@ app.delete('/pending-table-orders', authenticateUser, (req, res) => {
 });
 
 // --- Order Endpoints ---
-app.get('/orders', authenticateUser, (req, res) => {
+app.get('/orders', (req, res) => {
   db.all(`
     SELECT * FROM orders ORDER BY id DESC
   `, [], (err, rows) => {
@@ -881,7 +881,7 @@ app.get('/orders', authenticateUser, (req, res) => {
   });
 });
 
-app.post('/orders', authenticateUser, (req, res) => {
+app.post('/orders', (req, res) => {
   const { date, table, items, total, payment, status, serviceType, discountAmount, discountType, promoCode, customerId, lineItemDiscounts, customerName, orderNotes, finalTotal } = req.body;
   if (!date || !table || !items || total == null) return res.status(400).json({ error: 'Missing required fields.' });
   

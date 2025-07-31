@@ -520,12 +520,8 @@ function App() {
 
   // Fetch products
   useEffect(() => {
-    if (!isAuthenticated) return;
-    
     setProductsLoading(true);
-    fetch(`${API_URL}/products`, {
-      headers: getAuthHeaders()
-    })
+    fetch(`${API_URL}/products`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
@@ -542,15 +538,12 @@ function App() {
         setProductsError(e.message);
       })
       .finally(() => setProductsLoading(false));
-  }, [isAuthenticated]);
+  }, []);
 
   // Fetch orders
   useEffect(() => {
-    if (!isAuthenticated) return;
     setOrdersLoading(true);
-    fetch(`${API_URL}/orders`, {
-      headers: getAuthHeaders()
-    })
+    fetch(`${API_URL}/orders`)
       .then(res => res.json())
       .then(data => {
         console.log('Fetched orders:', data);
@@ -565,17 +558,13 @@ function App() {
         setOrders([]);
       })
       .finally(() => setOrdersLoading(false));
-  }, [isAuthenticated]);
+  }, []);
 
   // Fetch customers and rewards data
   useEffect(() => {
-    if (!isAuthenticated) return;
-    
     setCustomersLoading(true);
     Promise.all([
-      fetch(`${API_URL}/customers`, {
-        headers: getAuthHeaders()
-      }).then(res => res.json()),
+      fetch(`${API_URL}/customers`).then(res => res.json()),
       loadCustomersWithRewards(),
       loadRewardTiers(),
       loadTableOrders()
@@ -586,7 +575,7 @@ function App() {
       })
       .catch(e => setCustomersError(e.message))
       .finally(() => setCustomersLoading(false));
-  }, [isAuthenticated]);
+  }, []);
 
   // Load dashboard analytics data
   const loadDashboardData = async () => {
@@ -786,7 +775,7 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/customers`, {
         method: 'POST',
-        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(customer),
       });
       if (response.ok) {
@@ -809,7 +798,7 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/customers/${customer.id}`, {
         method: 'PUT',
-        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(customer),
       });
       if (response.ok) {
@@ -832,7 +821,6 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/customers/${id}`, {
         method: 'DELETE',
-        headers: getAuthHeaders(),
       });
       if (response.ok) {
         setCustomers(customers.filter(c => c.id !== id));
@@ -967,7 +955,7 @@ function App() {
       
       const response = await fetch(`${API_URL}/orders`, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderWithCustomer),
       });
       
@@ -986,9 +974,7 @@ function App() {
           console.log('Reloading customers to update visit counts...');
           // Reload both customer lists to ensure visit counts are updated
           Promise.all([
-            fetch(`${API_URL}/customers`, {
-              headers: getAuthHeaders()
-            }).then(res => res.json()).then(data => setCustomers(data)),
+            fetch(`${API_URL}/customers`).then(res => res.json()).then(data => setCustomers(data)),
             loadCustomersWithRewards()
           ]).catch(error => {
             console.error('Error reloading customers:', error);
@@ -1011,7 +997,7 @@ function App() {
     try {
       const res = await fetch(`${API_URL}/orders/${orderId}`, {
         method: "PUT",
-        headers: { ...getAuthHeaders(), "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           items, 
           total,
@@ -1042,7 +1028,6 @@ function App() {
     try {
       const response = await fetch(`${API_URL}/orders/${id}`, {
         method: 'DELETE',
-        headers: getAuthHeaders(),
       });
       if (response.ok) {
         setOrders(orders.filter(o => o.id !== id));
