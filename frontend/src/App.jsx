@@ -32,7 +32,7 @@ const useMobileDetection = () => {
 };
 
 // API URL - can be configured for online deployment
-const API_URL = import.meta.env.VITE_API_URL || 'https://tea-brikshya-pos-production.up.railway.app';
+const API_URL = 'https://tea-brikshya-pos-production.up.railway.app';
 
 const INITIAL_PRODUCTS = [];
 
