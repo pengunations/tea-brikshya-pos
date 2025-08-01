@@ -331,52 +331,7 @@ function App() {
     };
   }, []);
 
-  // Check for existing authentication token on app load
-  useEffect(() => {
-    try {
-      console.log('=== AUTHENTICATION CHECK ===');
-      const token = sessionStorage.getItem('authToken');
-      console.log('Token found:', !!token);
-      
-      if (token) {
-        console.log('Validating token...');
-        // Validate the token by making a request to /auth/me
-        fetch(`${API_URL}/auth/me`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-        .then(res => {
-          console.log('Auth response status:', res.status);
-          if (res.ok) {
-            return res.json();
-          } else {
-            // Token is invalid, remove it
-            console.log('Token invalid, removing...');
-            sessionStorage.removeItem('authToken');
-            throw new Error('Invalid token');
-          }
-        })
-        .then(user => {
-          console.log('Token valid, user:', user);
-          setIsAuthenticated(true);
-          setCurrentUser(user);
-          setActiveTab('Dashboard');
-        })
-        .catch(error => {
-          console.log('Token validation failed:', error);
-          setIsAuthenticated(false);
-          setCurrentUser(null);
-        });
-      } else {
-        console.log('No token found, showing login screen');
-      }
-    } catch (error) {
-      console.error('Authentication check error:', error);
-      setIsAuthenticated(false);
-      setCurrentUser(null);
-    }
-  }, []);
+  // Auto-login functionality removed - users must manually log in each time
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -1129,55 +1084,7 @@ function App() {
     }
   };
 
-  const handleClearAllOrders = async () => {
-    if (!window.confirm('Are you sure you want to clear ALL orders? This action cannot be undone.')) {
-      return;
-    }
 
-    try {
-      const response = await fetch(`${API_URL}/orders/clear`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(),
-      });
-
-      if (response.ok) {
-        alert('All orders cleared successfully!');
-        // Reload orders to show empty state
-        setOrders([]);
-      } else {
-        const error = await response.json();
-        alert('Error clearing orders: ' + error.error);
-      }
-    } catch (error) {
-      console.error('Error clearing orders:', error);
-      alert('Error clearing orders. Please try again.');
-    }
-  };
-
-  const handleClearAllProducts = async () => {
-    if (!window.confirm('Are you sure you want to clear ALL products? This action cannot be undone.')) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`${API_URL}/products/clear`, {
-        method: 'DELETE',
-        headers: getAuthHeaders(),
-      });
-
-      if (response.ok) {
-        alert('All products cleared successfully!');
-        // Reload products to show empty state
-        setProducts([]);
-      } else {
-        const error = await response.json();
-        alert('Error clearing products: ' + error.error);
-      }
-    } catch (error) {
-      console.error('Error clearing products:', error);
-      alert('Error clearing products. Please try again.');
-    }
-  };
 
   const openCheckout = () => {
     setShowCheckout(true);
@@ -2135,15 +2042,6 @@ function App() {
             >
               + Add Product
             </button>
-            {currentUser?.role === 'admin' && (
-              <button 
-                className="clear-btn" 
-                onClick={handleClearAllProducts} 
-                style={{backgroundColor: '#dc2626', color: 'white'}}
-              >
-                Clear All Products
-              </button>
-            )}
           </div>
         </div>
 
@@ -2588,10 +2486,6 @@ function App() {
             {currentUser?.role === 'admin' && (
               <button className="export-btn">Export CSV</button>
             )}
-            {currentUser?.role === 'admin' && (
-              <button className="reset-btn" onClick={handleResetSales}>Reset Sales</button>
-            )}
-
           </div>
         </div>
         <div className="sales-meta">
