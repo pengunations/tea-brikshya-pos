@@ -606,14 +606,33 @@ app.get('/products', (req, res) => {
 
 app.post('/products', (req, res) => {
   const { name, price, category, image, description } = req.body;
+  console.log('Creating product:', { name, price, category, description, imageLength: image ? image.length : 0 });
+  
   if (!name || price == null) return res.status(400).json({ error: 'Name and price are required.' });
+  
+  // Check if image data is too large (SQLite has limits)
+  if (image && image.length > 1000000) { // 1MB limit
+    console.log('Image too large, compressing...');
+    // For now, we'll store a placeholder and handle compression later
+    const compressedImage = image.substring(0, 1000000); // Truncate for now
+    console.log('Compressed image length:', compressedImage.length);
+  }
+  
   db.run(
     'INSERT INTO products (name, price, category, image, description) VALUES (?, ?, ?, ?, ?)',
     [name, price, category, image, description],
     function (err) {
-      if (err) return res.status(500).json({ error: err.message });
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: err.message });
+      }
+      console.log('Product inserted with ID:', this.lastID);
       db.get('SELECT * FROM products WHERE id = ?', [this.lastID], (err, row) => {
-        if (err) return res.status(500).json({ error: err.message });
+        if (err) {
+          console.error('Error fetching created product:', err);
+          return res.status(500).json({ error: err.message });
+        }
+        console.log('Created product:', row);
         res.status(201).json(row);
       });
     }

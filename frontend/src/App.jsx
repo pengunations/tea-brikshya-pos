@@ -3381,12 +3381,41 @@ function ProductForm({ product, onSubmit, onCancel }) {
   const handleImageUpload = (file) => {
     if (file && file.type.startsWith('image/')) {
       setImageFile(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target.result);
-        setFormData(prev => ({ ...prev, image: e.target.result }));
+      
+      // Compress image before converting to base64
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calculate new dimensions (max 300x300)
+        const maxSize = 300;
+        let { width, height } = img;
+        
+        if (width > height) {
+          if (width > maxSize) {
+            height = (height * maxSize) / width;
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width = (width * maxSize) / height;
+            height = maxSize;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Draw and compress
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7); // 70% quality
+        
+        setImagePreview(compressedDataUrl);
+        setFormData(prev => ({ ...prev, image: compressedDataUrl }));
       };
-      reader.readAsDataURL(file);
+      
+      img.src = URL.createObjectURL(file);
     }
   };
 
