@@ -3420,8 +3420,8 @@ function ProductForm({ product, onSubmit, onCancel }) {
       img.onload = () => {
         console.log('Image loaded, original dimensions:', { width: img.width, height: img.height });
         
-        // Calculate new dimensions (max 200x200 for smaller size)
-        const maxSize = 200;
+        // Calculate new dimensions (max 150x150 for better performance)
+        const maxSize = 150;
         let { width, height } = img;
         
         if (width > height) {
@@ -3443,20 +3443,20 @@ function ProductForm({ product, onSubmit, onCancel }) {
         
         // Draw and compress with lower quality
         ctx.drawImage(img, 0, 0, width, height);
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5); // 50% quality for smaller size
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.4); // 40% quality for smaller size
         
         console.log('Compressed image length:', compressedDataUrl.length);
         
         // Check if image is still too large
-        if (compressedDataUrl.length > 500000) { // 500KB limit
+        if (compressedDataUrl.length > 80000) { // 80KB limit for better performance
           console.warn('Image still too large, further compressing...');
           // Try with even smaller dimensions
           const smallerCanvas = document.createElement('canvas');
           const smallerCtx = smallerCanvas.getContext('2d');
-          smallerCanvas.width = 150;
-          smallerCanvas.height = 150;
-          smallerCtx.drawImage(img, 0, 0, 150, 150);
-          const smallerDataUrl = smallerCanvas.toDataURL('image/jpeg', 0.3); // 30% quality
+          smallerCanvas.width = 100;
+          smallerCanvas.height = 100;
+          smallerCtx.drawImage(img, 0, 0, 100, 100);
+          const smallerDataUrl = smallerCanvas.toDataURL('image/jpeg', 0.25); // 25% quality
           console.log('Further compressed image length:', smallerDataUrl.length);
           
           setImagePreview(smallerDataUrl);
