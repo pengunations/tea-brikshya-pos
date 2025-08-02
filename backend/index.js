@@ -611,11 +611,11 @@ app.post('/products', (req, res) => {
   if (!name || price == null) return res.status(400).json({ error: 'Name and price are required.' });
   
   // Check if image data is too large (SQLite has limits)
-  if (image && image.length > 1000000) { // 1MB limit
-    console.log('Image too large, compressing...');
-    // For now, we'll store a placeholder and handle compression later
-    const compressedImage = image.substring(0, 1000000); // Truncate for now
-    console.log('Compressed image length:', compressedImage.length);
+  if (image && image.length > 500000) { // 500KB limit
+    console.log('Image too large:', image.length, 'bytes');
+    return res.status(400).json({ 
+      error: 'Image is too large. Please use a smaller image or compress it further.' 
+    });
   }
   
   db.run(

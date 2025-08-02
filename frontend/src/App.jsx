@@ -677,18 +677,42 @@ function App() {
   // Product CRUD
   const addProduct = async (newProduct) => {
     try {
+      console.log('Adding product:', { 
+        name: newProduct.name, 
+        price: newProduct.price, 
+        category: newProduct.category,
+        description: newProduct.description,
+        imageLength: newProduct.image ? newProduct.image.length : 0,
+        hasImage: !!newProduct.image
+      });
+      
       const response = await fetch(`${API_URL}/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newProduct),
       });
+      
+      console.log('Response status:', response.status);
+      
       if (response.ok) {
         const product = await response.json();
+        console.log('Product created successfully:', product);
         setProducts([...products, product]);
         setShowAddForm(false);
+      } else {
+        const errorData = await response.json();
+        console.error('Server error:', errorData);
+        
+        // Handle specific error cases
+        if (errorData.error && errorData.error.includes('too large')) {
+          throw new Error('Image is too large. Please try a smaller image or compress it further.');
+        } else {
+          throw new Error(errorData.error || 'Failed to add product');
+        }
       }
     } catch (error) {
       console.error('Error adding product:', error);
+      alert('Error adding product: ' + error.message);
     }
   };
 
@@ -3379,6 +3403,12 @@ function ProductForm({ product, onSubmit, onCancel }) {
   const [error, setError] = useState(null);
 
   const handleImageUpload = (file) => {
+    console.log('Image upload started:', { 
+      fileName: file.name, 
+      fileSize: file.size, 
+      fileType: file.type 
+    });
+    
     if (file && file.type.startsWith('image/')) {
       setImageFile(file);
       
@@ -3388,8 +3418,10 @@ function ProductForm({ product, onSubmit, onCancel }) {
       const img = new Image();
       
       img.onload = () => {
-        // Calculate new dimensions (max 300x300)
-        const maxSize = 300;
+        console.log('Image loaded, original dimensions:', { width: img.width, height: img.height });
+        
+        // Calculate new dimensions (max 200x200 for smaller size)
+        const maxSize = 200;
         let { width, height } = img;
         
         if (width > height) {
@@ -3404,18 +3436,48 @@ function ProductForm({ product, onSubmit, onCancel }) {
           }
         }
         
+        console.log('Compressed dimensions:', { width, height });
+        
         canvas.width = width;
         canvas.height = height;
         
-        // Draw and compress
+        // Draw and compress with lower quality
         ctx.drawImage(img, 0, 0, width, height);
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7); // 70% quality
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5); // 50% quality for smaller size
         
-        setImagePreview(compressedDataUrl);
-        setFormData(prev => ({ ...prev, image: compressedDataUrl }));
+        console.log('Compressed image length:', compressedDataUrl.length);
+        
+        // Check if image is still too large
+        if (compressedDataUrl.length > 500000) { // 500KB limit
+          console.warn('Image still too large, further compressing...');
+          // Try with even smaller dimensions
+          const smallerCanvas = document.createElement('canvas');
+          const smallerCtx = smallerCanvas.getContext('2d');
+          smallerCanvas.width = 150;
+          smallerCanvas.height = 150;
+          smallerCtx.drawImage(img, 0, 0, 150, 150);
+          const smallerDataUrl = smallerCanvas.toDataURL('image/jpeg', 0.3); // 30% quality
+          console.log('Further compressed image length:', smallerDataUrl.length);
+          
+          setImagePreview(smallerDataUrl);
+          setFormData(prev => ({ ...prev, image: smallerDataUrl }));
+        } else {
+          setImagePreview(compressedDataUrl);
+          setFormData(prev => ({ ...prev, image: compressedDataUrl }));
+        }
+        
+        console.log('Image set in form data');
+      };
+      
+      img.onerror = () => {
+        console.error('Failed to load image');
+        alert('Failed to load image. Please try a different image.');
       };
       
       img.src = URL.createObjectURL(file);
+    } else {
+      console.error('Invalid file type:', file.type);
+      alert('Please select a valid image file.');
     }
   };
 
