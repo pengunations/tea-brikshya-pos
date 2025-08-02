@@ -32,7 +32,7 @@ const useMobileDetection = () => {
 };
 
 // API URL - can be configured for online deployment
-// Updated: Simplified authentication system - Force rebuild - Fresh deployment - Cache bust
+// Updated: Fixed API URL for Vercel deployment - Cache bust 2
 const API_URL = 'https://tea-brikshya-pos-production.up.railway.app';
 
 
