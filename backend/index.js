@@ -7,7 +7,12 @@ const bcrypt = require('bcryptjs');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors());
+app.use(cors({
+  origin: ['https://frontend-eta-sandy.vercel.app', 'https://frontend-hmjt5e4en-tea-brikshyas-projects.vercel.app', 'http://localhost:5173', 'http://localhost:5174'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json({ limit: '50mb' }));
 
 // SQLite setup - Use Railway's persistent storage
@@ -598,8 +603,16 @@ app.get('/auth/me', authenticateUser, (req, res) => {
 
 // --- Product Endpoints ---
 app.get('/products', (req, res) => {
+  console.log('=== PRODUCTS REQUEST ===');
+  console.log('Request headers:', req.headers);
+  
   db.all('SELECT * FROM products', [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ error: err.message });
+    }
+    console.log('Products found:', rows.length);
+    res.setHeader('Cache-Control', 'no-cache');
     res.json(rows);
   });
 });
@@ -901,29 +914,45 @@ app.delete('/pending-table-orders', (req, res) => {
 
 // --- Order Endpoints ---
 app.get('/orders', (req, res) => {
+  console.log('=== ORDERS REQUEST ===');
+  console.log('Request headers:', req.headers);
+  
   db.all(`
     SELECT * FROM orders ORDER BY id DESC
   `, [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    // Parse items JSON for each order and map table_number to table
-    res.json(rows.map(order => ({ 
-      ...order, 
-      table: order.table_number, // Map table_number to table for frontend compatibility
-      items: order.items ? JSON.parse(order.items) : [],
-      serviceType: order.service_type, // Map service_type to serviceType for frontend compatibility
-      discountAmount: order.discount_amount, // Map discount_amount to discountAmount for frontend compatibility
-      discountType: order.discount_type, // Map discount_type to discountType for frontend compatibility
-      promoCode: order.promo_code, // Map promo_code to promoCode for frontend compatibility
-      finalTotal: order.final_total, // Map final_total to finalTotal for frontend compatibility
-      lineItemDiscounts: order.line_item_discounts ? JSON.parse(order.line_item_discounts) : [], // Map line_item_discounts to lineItemDiscounts
-      customerId: order.customer_id || null,
-      customerName: order.customer_name || null,
-      orderNotes: order.order_notes || null,
-      isSplitBill: order.is_split_bill || false,
-      parentOrderId: order.parent_order_id || null,
-      splitNumber: order.split_number || null,
-      customerPhone: null // Will be populated later when customer functionality is added
-    })));
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ error: err.message });
+    }
+    console.log('Orders found:', rows.length);
+    
+    try {
+      // Parse items JSON for each order and map table_number to table
+      const processedOrders = rows.map(order => ({ 
+        ...order, 
+        table: order.table_number, // Map table_number to table for frontend compatibility
+        items: order.items ? JSON.parse(order.items) : [],
+        serviceType: order.service_type, // Map service_type to serviceType for frontend compatibility
+        discountAmount: order.discount_amount, // Map discount_amount to discountAmount for frontend compatibility
+        discountType: order.discount_type, // Map discount_type to discountType for frontend compatibility
+        promoCode: order.promo_code, // Map promo_code to promoCode for frontend compatibility
+        finalTotal: order.final_total, // Map final_total to finalTotal for frontend compatibility
+        lineItemDiscounts: order.line_item_discounts ? JSON.parse(order.line_item_discounts) : [], // Map line_item_discounts to lineItemDiscounts
+        customerId: order.customer_id || null,
+        customerName: order.customer_name || null,
+        orderNotes: order.order_notes || null,
+        isSplitBill: order.is_split_bill || false,
+        parentOrderId: order.parent_order_id || null,
+        splitNumber: order.split_number || null,
+        customerPhone: null // Will be populated later when customer functionality is added
+      }));
+      
+      res.setHeader('Cache-Control', 'no-cache');
+      res.json(processedOrders);
+    } catch (parseError) {
+      console.error('Error parsing orders:', parseError);
+      res.status(500).json({ error: 'Error processing orders data' });
+    }
   });
 });
 
